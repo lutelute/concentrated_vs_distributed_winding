@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブラシレスモータ シミュレータ - コイル巻き方の影響を体感</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        canvas {
+            border-radius: 10px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .unit {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .comparison-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .running-animation {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 ブラシレスモータ シミュレータ</h1>
+        <p class="subtitle">コイルの巻き方がモータ特性に及ぼす影響を体感しよう!</p>
+
+        <div class="main-content">
+            <!-- 左パネル: コントロール -->
+            <div class="panel">
+                <h2>⚙️ モータ設定</h2>
+                
+                <div class="control-group">
+                    <label>巻線方式</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="concentrated" name="winding" value="concentrated" checked>
+                            <label for="concentrated">集中巻</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="distributed" name="winding" value="distributed">
+                            <label for="distributed">分布巻</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>コイル巻き数: <span class="value-display" id="turnsValue">100</span>ターン</label>
+                    <input type="range" id="turns" min="50" max="200" value="100" step="10">
+                </div>
+
+                <div class="control-group">
+                    <label>コイル密度: <span class="value-display" id="densityValue">80</span>%</label>
+                    <input type="range" id="density" min="50" max="100" value="80" step="5">
+                </div>
+
+                <div class="control-group">
+                    <label>スロット数: <span class="value-display" id="slotsValue">12</span></label>
+                    <input type="range" id="slots" min="9" max="18" value="12" step="3">
+                </div>
+
+                <div class="control-group">
+                    <label>磁極数: <span class="value-display" id="polesValue">8</span></label>
+                    <input type="range" id="poles" min="4" max="12" value="8" step="2">
+                </div>
+
+                <div class="control-group">
+                    <label>回転速度: <span class="value-display" id="speedValue">1000</span>rpm</label>
+                    <input type="range" id="speed" min="0" max="3000" value="1000" step="100">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="runBtn">▶️ シミュレーション実行</button>
+                    <button class="btn btn-secondary" id="resetBtn">🔄 リセット</button>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 巻線方式について</h3>
+                    <p><strong>集中巻:</strong> 1つのティース(歯)にコイルを集中して巻く方式。コイルエンドが短く、銅損が少ない。製造が容易。</p>
+                    <p style="margin-top: 10px;"><strong>分布巻:</strong> 複数のティースにまたがってコイルを分散して巻く方式。起磁力分布が正弦波に近く、トルクリップルが小さい。</p>
+                </div>
+            </div>
+
+            <!-- 右パネル: モータ構造の可視化 -->
+            <div class="panel">
+                <h2>🎨 モータ構造</h2>
+                <canvas id="motorCanvas" width="500" height="500"></canvas>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>推定トルク</h3>
+                        <div class="value" id="torqueValue">0.85</div>
+                        <div class="unit">Nm</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>効率</h3>
+                        <div class="value" id="efficiencyValue">88</div>
+                        <div class="unit">%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>トルクリップル</h3>
+                        <div class="value" id="rippleValue">5.2</div>
+                        <div class="unit">%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>銅損</h3>
+                        <div class="value" id="copperLossValue">12</div>
+                        <div class="unit">W</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 巻き方の2D展開図 -->
+        <div class="panel">
+            <h2>📐 コイル巻き方の2D展開図</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: #667eea; margin-bottom: 10px;">集中巻パターン</h3>
+                    <canvas id="concentratedWindingDiagram" width="500" height="200"></canvas>
+                    <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9em;">各ティースに独立してコイルを巻く</p>
+                </div>
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: #667eea; margin-bottom: 10px;">分布巻パターン</h3>
+                    <canvas id="distributedWindingDiagram" width="500" height="200"></canvas>
+                    <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9em;">複数のティースにまたがってコイルを巻く</p>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="margin-top: 20px;">
+                <h3 style="text-align: center; color: #667eea; margin-bottom: 10px;">現在の設定の巻線パターン展開図</h3>
+                <canvas id="currentWindingDiagram" width="1000" height="250"></canvas>
+                <p style="text-align: center; margin-top: 10px; color: #666;">
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #ff6b6b; margin: 0 5px; vertical-align: middle;"></span>U相
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #4ecdc4; margin: 0 5px; vertical-align: middle;"></span>V相
+                    <span style="display: inline-block; width: 20px; height: 20px; background: #ffe66d; margin: 0 5px; vertical-align: middle;"></span>W相
+                </p>
+            </div>
+        </div>
+
+        <!-- 下部: 特性グラフ -->
+        <div class="panel">
+            <h2>📊 モータ特性グラフ</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: #667eea; margin-bottom: 10px;">トルク-速度特性</h3>
+                    <canvas id="torqueSpeedChart" width="500" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 style="text-align: center; color: #667eea; margin-bottom: 10px;">トルクリップル波形</h3>
+                    <canvas id="rippleChart" width="500" height="300"></canvas>
+                </div>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>集中巻</th>
+                        <th>分布巻</th>
+                        <th>現在の設定</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>トルク密度</td>
+                        <td>中</td>
+                        <td>高</td>
+                        <td id="currentTorqueDensity">中</td>
+                    </tr>
+                    <tr>
+                        <td>トルクリップル</td>
+                        <td>大 (8-12%)</td>
+                        <td>小 (3-5%)</td>
+                        <td id="currentRippleLevel">大</td>
+                    </tr>
+                    <tr>
+                        <td>効率</td>
+                        <td>高 (90-93%)</td>
+                        <td>中 (85-88%)</td>
+                        <td id="currentEfficiencyLevel">高</td>
+                    </tr>
+                    <tr>
+                        <td>製造難易度</td>
+                        <td>易</td>
+                        <td>難</td>
+                        <td id="currentManufacturing">易</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let motorConfig = {
+            windingType: 'concentrated',
+            turns: 100,
+            density: 80,
+            slots: 12,
+            poles: 8,
+            speed: 1000,
+            isRunning: false,
+            rotationAngle: 0
+        };
+
+        let animationId = null;
+
+        // DOM要素の取得
+        const motorCanvas = document.getElementById('motorCanvas');
+        const motorCtx = motorCanvas.getContext('2d');
+        const torqueSpeedCanvas = document.getElementById('torqueSpeedChart');
+        const torqueSpeedCtx = torqueSpeedCanvas.getContext('2d');
+        const rippleCanvas = document.getElementById('rippleChart');
+        const rippleCtx = rippleCanvas.getContext('2d');
+
+        // イベントリスナーの設定
+        document.querySelectorAll('input[name="winding"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                motorConfig.windingType = e.target.value;
+                updateSimulation();
+            });
+        });
+
+        document.getElementById('turns').addEventListener('input', (e) => {
+            motorConfig.turns = parseInt(e.target.value);
+            document.getElementById('turnsValue').textContent = motorConfig.turns;
+            updateSimulation();
+        });
+
+        document.getElementById('density').addEventListener('input', (e) => {
+            motorConfig.density = parseInt(e.target.value);
+            document.getElementById('densityValue').textContent = motorConfig.density;
+            updateSimulation();
+        });
+
+        document.getElementById('slots').addEventListener('input', (e) => {
+            motorConfig.slots = parseInt(e.target.value);
+            document.getElementById('slotsValue').textContent = motorConfig.slots;
+            updateSimulation();
+        });
+
+        document.getElementById('poles').addEventListener('input', (e) => {
+            motorConfig.poles = parseInt(e.target.value);
+            document.getElementById('polesValue').textContent = motorConfig.poles;
+            updateSimulation();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            motorConfig.speed = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = motorConfig.speed;
+            updateSimulation();
+        });
+
+        document.getElementById('runBtn').addEventListener('click', () => {
+            motorConfig.isRunning = !motorConfig.isRunning;
+            const btn = document.getElementById('runBtn');
+            if (motorConfig.isRunning) {
+                btn.innerHTML = '⏸️ 停止';
+                btn.style.background = '#f44336';
+                startAnimation();
+            } else {
+                btn.innerHTML = '▶️ シミュレーション実行';
+                btn.style.background = '#667eea';
+                stopAnimation();
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            motorConfig = {
+                windingType: 'concentrated',
+                turns: 100,
+                density: 80,
+                slots: 12,
+                poles: 8,
+                speed: 1000,
+                isRunning: false,
+                rotationAngle: 0
+            };
+            document.getElementById('concentrated').checked = true;
+            document.getElementById('turns').value = 100;
+            document.getElementById('density').value = 80;
+            document.getElementById('slots').value = 12;
+            document.getElementById('poles').value = 8;
+            document.getElementById('speed').value = 1000;
+            document.getElementById('turnsValue').textContent = 100;
+            document.getElementById('densityValue').textContent = 80;
+            document.getElementById('slotsValue').textContent = 12;
+            document.getElementById('polesValue').textContent = 8;
+            document.getElementById('speedValue').textContent = 1000;
+            
+            stopAnimation();
+            document.getElementById('runBtn').innerHTML = '▶️ シミュレーション実行';
+            document.getElementById('runBtn').style.background = '#667eea';
+            updateSimulation();
+        });
+
+        // モータの描画
+        function drawMotor() {
+            const centerX = motorCanvas.width / 2;
+            const centerY = motorCanvas.height / 2;
+            const outerRadius = 200;
+            const innerRadius = 120;
+            const rotorRadius = 100;
+
+            motorCtx.clearRect(0, 0, motorCanvas.width, motorCanvas.height);
+
+            // ステータ外周
+            motorCtx.beginPath();
+            motorCtx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
+            motorCtx.fillStyle = '#e0e0e0';
+            motorCtx.fill();
+            motorCtx.strokeStyle = '#333';
+            motorCtx.lineWidth = 2;
+            motorCtx.stroke();
+
+            // スロットとコイルの描画
+            const slotAngle = (Math.PI * 2) / motorConfig.slots;
+            for (let i = 0; i < motorConfig.slots; i++) {
+                const angle = i * slotAngle;
+                const slotX = centerX + Math.cos(angle) * ((outerRadius + innerRadius) / 2);
+                const slotY = centerY + Math.sin(angle) * ((outerRadius + innerRadius) / 2);
+
+                // スロット
+                motorCtx.beginPath();
+                motorCtx.arc(slotX, slotY, 15, 0, Math.PI * 2);
+                motorCtx.fillStyle = '#fff';
+                motorCtx.fill();
+                motorCtx.strokeStyle = '#666';
+                motorCtx.lineWidth = 1;
+                motorCtx.stroke();
+
+                // コイルの表現
+                const coilPhase = i % 3; // 3相
+                const coilColors = ['#ff6b6b', '#4ecdc4', '#ffe66d'];
+                
+                if (motorConfig.windingType === 'concentrated') {
+                    // 集中巻: 各スロットに独立したコイル
+                    motorCtx.beginPath();
+                    motorCtx.arc(slotX, slotY, 12, 0, Math.PI * 2);
+                    motorCtx.fillStyle = coilColors[coilPhase];
+                    motorCtx.fill();
+                } else {
+                    // 分布巻: 隣接スロットにまたがるコイル
+                    motorCtx.beginPath();
+                    const nextAngle = (i + 1) * slotAngle;
+                    const nextX = centerX + Math.cos(nextAngle) * ((outerRadius + innerRadius) / 2);
+                    const nextY = centerY + Math.sin(nextAngle) * ((outerRadius + innerRadius) / 2);
+                    
+                    motorCtx.moveTo(slotX, slotY);
+                    motorCtx.quadraticCurveTo(centerX, centerY, nextX, nextY);
+                    motorCtx.strokeStyle = coilColors[coilPhase];
+                    motorCtx.lineWidth = 3;
+                    motorCtx.stroke();
+                    
+                    motorCtx.beginPath();
+                    motorCtx.arc(slotX, slotY, 8, 0, Math.PI * 2);
+                    motorCtx.fillStyle = coilColors[coilPhase];
+                    motorCtx.fill();
+                }
+
+                // 巻き数の視覚表現(線の太さ)
+                const thickness = (motorConfig.turns / 100) * 2;
+                motorCtx.strokeStyle = coilColors[coilPhase];
+                motorCtx.lineWidth = thickness;
+                motorCtx.beginPath();
+                motorCtx.arc(slotX, slotY, 10, 0, Math.PI * 2);
+                motorCtx.stroke();
+            }
+
+            // ロータ(回転部)
+            motorCtx.save();
+            motorCtx.translate(centerX, centerY);
+            motorCtx.rotate(motorConfig.rotationAngle);
+
+            // ロータコア
+            motorCtx.beginPath();
+            motorCtx.arc(0, 0, rotorRadius, 0, Math.PI * 2);
+            motorCtx.fillStyle = '#a0a0a0';
+            motorCtx.fill();
+            motorCtx.strokeStyle = '#333';
+            motorCtx.lineWidth = 2;
+            motorCtx.stroke();
+
+            // 永久磁石(N/S極)
+            const poleAngle = (Math.PI * 2) / motorConfig.poles;
+            for (let i = 0; i < motorConfig.poles; i++) {
+                const angle = i * poleAngle;
+                const magnetRadius = rotorRadius * 0.7;
+                const magnetX = Math.cos(angle) * magnetRadius;
+                const magnetY = Math.sin(angle) * magnetRadius;
+
+                motorCtx.beginPath();
+                motorCtx.arc(magnetX, magnetY, 20, 0, Math.PI * 2);
+                motorCtx.fillStyle = (i % 2 === 0) ? '#ff4444' : '#4444ff';
+                motorCtx.fill();
+                motorCtx.strokeStyle = '#fff';
+                motorCtx.lineWidth = 2;
+                motorCtx.stroke();
+
+                // N/S表示
+                motorCtx.fillStyle = '#fff';
+                motorCtx.font = 'bold 14px Arial';
+                motorCtx.textAlign = 'center';
+                motorCtx.textBaseline = 'middle';
+                motorCtx.fillText((i % 2 === 0) ? 'N' : 'S', magnetX, magnetY);
+            }
+
+            // 回転軸
+            motorCtx.beginPath();
+            motorCtx.arc(0, 0, 15, 0, Math.PI * 2);
+            motorCtx.fillStyle = '#555';
+            motorCtx.fill();
+
+            motorCtx.restore();
+        }
+
+        // 特性計算
+        function calculateCharacteristics() {
+            const baseTorque = 1.0;
+            const baseEfficiency = 90;
+            const baseRipple = 8;
+            const baseCopperLoss = 15;
+
+            // 巻線方式による影響
+            let torqueMultiplier = 1.0;
+            let efficiencyModifier = 0;
+            let rippleMultiplier = 1.0;
+
+            if (motorConfig.windingType === 'concentrated') {
+                efficiencyModifier = 2; // 集中巻は効率が高い
+                rippleMultiplier = 1.3; // リップルは大きい
+                torqueMultiplier = 0.95;
+            } else {
+                efficiencyModifier = -3; // 分布巻は効率がやや低い
+                rippleMultiplier = 0.5; // リップルは小さい
+                torqueMultiplier = 1.1;
+            }
+
+            // 巻き数による影響
+            const turnsEffect = motorConfig.turns / 100;
+            torqueMultiplier *= turnsEffect;
+
+            // 密度による影響
+            const densityEffect = motorConfig.density / 80;
+            efficiencyModifier += (densityEffect - 1) * 5;
+
+            // スロット/極数比による影響
+            const slotPoleRatio = motorConfig.slots / motorConfig.poles;
+            if (slotPoleRatio >= 1.2 && slotPoleRatio <= 1.8) {
+                rippleMultiplier *= 0.8; // 最適な比率
+            } else {
+                rippleMultiplier *= 1.2;
+            }
+
+            // 速度による影響
+            const speedEffect = 1 - (motorConfig.speed / 3000) * 0.3;
+
+            // 最終値の計算
+            const torque = (baseTorque * torqueMultiplier * speedEffect).toFixed(2);
+            const efficiency = Math.min(95, Math.max(75, baseEfficiency + efficiencyModifier + (densityEffect - 1) * 3)).toFixed(0);
+            const ripple = (baseRipple * rippleMultiplier).toFixed(1);
+            const copperLoss = (baseCopperLoss * (motorConfig.turns / 100) * (100 / motorConfig.density)).toFixed(0);
+
+            return { torque, efficiency, ripple, copperLoss };
+        }
+
+        // 統計値の更新
+        function updateStats() {
+            const stats = calculateCharacteristics();
+            document.getElementById('torqueValue').textContent = stats.torque;
+            document.getElementById('efficiencyValue').textContent = stats.efficiency;
+            document.getElementById('rippleValue').textContent = stats.ripple;
+            document.getElementById('copperLossValue').textContent = stats.copperLoss;
+
+            // 比較表の更新
+            document.getElementById('currentTorqueDensity').textContent = 
+                motorConfig.windingType === 'concentrated' ? '中' : '高';
+            document.getElementById('currentRippleLevel').textContent = 
+                parseFloat(stats.ripple) > 7 ? '大' : '小';
+            document.getElementById('currentEfficiencyLevel').textContent = 
+                parseInt(stats.efficiency) > 88 ? '高' : '中';
+            document.getElementById('currentManufacturing').textContent = 
+                motorConfig.windingType === 'concentrated' ? '易' : '難';
+        }
+
+        // トルク-速度特性グラフ
+        function drawTorqueSpeedChart() {
+            const ctx = torqueSpeedCtx;
+            const width = torqueSpeedCanvas.width;
+            const height = torqueSpeedCanvas.height;
+            const padding = 50;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 軸の描画
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // ラベル
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('回転速度 (rpm)', width / 2, height - 10);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('トルク (Nm)', 0, 0);
+            ctx.restore();
+
+            // 目盛り
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (width - 2 * padding) * (i / 5);
+                const speed = (3000 * i / 5).toFixed(0);
+                ctx.fillText(speed, x, height - padding + 20);
+                
+                const y = height - padding - (height - 2 * padding) * (i / 5);
+                const torque = (1.5 * i / 5).toFixed(1);
+                ctx.textAlign = 'right';
+                ctx.fillText(torque, padding - 10, y + 5);
+            }
+
+            // トルク-速度曲線
+            const stats = calculateCharacteristics();
+            const baseTorque = parseFloat(stats.torque) * (3000 / motorConfig.speed);
+
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            for (let speed = 0; speed <= 3000; speed += 50) {
+                const torque = baseTorque * (1 - speed / 3000 * 0.3);
+                const x = padding + (width - 2 * padding) * (speed / 3000);
+                const y = height - padding - (height - 2 * padding) * (torque / 1.5);
+                
+                if (speed === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // 現在の動作点
+            const currentX = padding + (width - 2 * padding) * (motorConfig.speed / 3000);
+            const currentTorque = parseFloat(stats.torque);
+            const currentY = height - padding - (height - 2 * padding) * (currentTorque / 1.5);
+            
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // トルクリップル波形
+        function drawRippleChart() {
+            const ctx = rippleCtx;
+            const width = rippleCanvas.width;
+            const height = rippleCanvas.height;
+            const padding = 50;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 軸の描画
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // ラベル
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('回転角度 (度)', width / 2, height - 10);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('トルク変動 (%)', 0, 0);
+            ctx.restore();
+
+            // 目盛り
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            for (let i = 0; i <= 4; i++) {
+                const x = padding + (width - 2 * padding) * (i / 4);
+                const angle = (360 * i / 4).toFixed(0);
+                ctx.fillText(angle, x, height - padding + 20);
+            }
+
+            for (let i = 0; i <= 4; i++) {
+                const y = height - padding - (height - 2 * padding) * (i / 4);
+                const value = (-10 + 20 * i / 4).toFixed(0);
+                ctx.textAlign = 'right';
+                ctx.fillText(value, padding - 10, y + 5);
+            }
+
+            // 基準線
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            const midY = height - padding - (height - 2 * padding) * 0.5;
+            ctx.moveTo(padding, midY);
+            ctx.lineTo(width - padding, midY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // リップル波形
+            const stats = calculateCharacteristics();
+            const rippleAmplitude = parseFloat(stats.ripple);
+            const harmonics = motorConfig.windingType === 'concentrated' ? 3 : 1;
+
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            for (let angle = 0; angle <= 360; angle += 2) {
+                let ripple = 0;
+                
+                // 基本波
+                ripple += Math.sin(angle * Math.PI / 180 * motorConfig.poles) * rippleAmplitude;
+                
+                // 高調波成分(集中巻は多い)
+                if (motorConfig.windingType === 'concentrated') {
+                    ripple += Math.sin(angle * Math.PI / 180 * motorConfig.poles * 3) * rippleAmplitude * 0.3;
+                    ripple += Math.sin(angle * Math.PI / 180 * motorConfig.poles * 5) * rippleAmplitude * 0.15;
+                }
+
+                const x = padding + (width - 2 * padding) * (angle / 360);
+                const y = height - padding - (height - 2 * padding) * ((ripple + 10) / 20);
+                
+                if (angle === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // アニメーション
+        function startAnimation() {
+            function animate() {
+                if (!motorConfig.isRunning) return;
+                
+                motorConfig.rotationAngle += (motorConfig.speed / 1000) * 0.1;
+                if (motorConfig.rotationAngle > Math.PI * 2) {
+                    motorConfig.rotationAngle -= Math.PI * 2;
+                }
+                
+                drawMotor();
+                animationId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            motorConfig.isRunning = false;
+        }
+
+        // シミュレーション更新
+        function updateSimulation() {
+            drawMotor();
+            updateStats();
+            drawTorqueSpeedChart();
+            drawRippleChart();
+            drawWindingDiagrams();
+        }
+
+        // 2D巻線パターン図の描画
+        function drawWindingDiagrams() {
+            drawConcentratedWindingDiagram();
+            drawDistributedWindingDiagram();
+            drawCurrentWindingDiagram();
+        }
+
+        // 集中巻の2D展開図
+        function drawConcentratedWindingDiagram() {
+            const canvas = document.getElementById('concentratedWindingDiagram');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const slotCount = 12;
+            const slotWidth = (width - 100) / slotCount;
+            const startX = 50;
+            const teethY = height / 2;
+            
+            // ティース(歯)の描画
+            for (let i = 0; i < slotCount; i++) {
+                const x = startX + i * slotWidth;
+                
+                // ティース
+                ctx.fillStyle = '#d0d0d0';
+                ctx.fillRect(x, teethY - 40, slotWidth * 0.6, 80);
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, teethY - 40, slotWidth * 0.6, 80);
+                
+                // コイル(3相で色分け)
+                const phase = i % 3;
+                const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d'];
+                const phaseNames = ['U', 'V', 'W'];
+                
+                // コイルの巻き線表現
+                ctx.strokeStyle = colors[phase];
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                
+                // 上部の巻き
+                ctx.beginPath();
+                ctx.arc(x + slotWidth * 0.3, teethY - 30, 15, Math.PI, 0);
+                ctx.stroke();
+                
+                // 下部の巻き
+                ctx.beginPath();
+                ctx.arc(x + slotWidth * 0.3, teethY + 30, 15, 0, Math.PI);
+                ctx.stroke();
+                
+                // 相の表示
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(phaseNames[phase], x + slotWidth * 0.3, teethY + 5);
+            }
+            
+            // 説明矢印と文字
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(startX + slotWidth * 0.3, teethY - 60);
+            ctx.lineTo(startX + slotWidth * 0.3, 20);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('1ティース1コイル', startX + slotWidth * 0.3, 15);
+        }
+
+        // 分布巻の2D展開図
+        function drawDistributedWindingDiagram() {
+            const canvas = document.getElementById('distributedWindingDiagram');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const slotCount = 12;
+            const slotWidth = (width - 100) / slotCount;
+            const startX = 50;
+            const teethY = height / 2;
+            
+            // ティース(歯)の描画
+            for (let i = 0; i < slotCount; i++) {
+                const x = startX + i * slotWidth;
+                
+                ctx.fillStyle = '#d0d0d0';
+                ctx.fillRect(x, teethY - 40, slotWidth * 0.6, 80);
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, teethY - 40, slotWidth * 0.6, 80);
+            }
+            
+            // 分布巻コイルの描画(複数ティースにまたがる)
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d'];
+            const phaseNames = ['U', 'V', 'W'];
+            
+            // U相コイル(スロット0-1-2にまたがる)
+            ctx.strokeStyle = colors[0];
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            const u1 = startX + 0.5 * slotWidth;
+            const u2 = startX + 2.5 * slotWidth;
+            ctx.moveTo(u1, teethY - 50);
+            ctx.bezierCurveTo(u1, teethY - 80, u2, teethY - 80, u2, teethY - 50);
+            ctx.moveTo(u1, teethY + 50);
+            ctx.bezierCurveTo(u1, teethY + 80, u2, teethY + 80, u2, teethY + 50);
+            ctx.stroke();
+            
+            // V相コイル(スロット4-5-6にまたがる)
+            ctx.strokeStyle = colors[1];
+            ctx.beginPath();
+            const v1 = startX + 4.5 * slotWidth;
+            const v2 = startX + 6.5 * slotWidth;
+            ctx.moveTo(v1, teethY - 50);
+            ctx.bezierCurveTo(v1, teethY - 80, v2, teethY - 80, v2, teethY - 50);
+            ctx.moveTo(v1, teethY + 50);
+            ctx.bezierCurveTo(v1, teethY + 80, v2, teethY + 80, v2, teethY + 50);
+            ctx.stroke();
+            
+            // W相コイル(スロット8-9-10にまたがる)
+            ctx.strokeStyle = colors[2];
+            ctx.beginPath();
+            const w1 = startX + 8.5 * slotWidth;
+            const w2 = startX + 10.5 * slotWidth;
+            ctx.moveTo(w1, teethY - 50);
+            ctx.bezierCurveTo(w1, teethY - 80, w2, teethY - 80, w2, teethY - 50);
+            ctx.moveTo(w1, teethY + 50);
+            ctx.bezierCurveTo(w1, teethY + 80, w2, teethY + 80, w2, teethY + 50);
+            ctx.stroke();
+            
+            // 相の表示
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('U', (u1 + u2) / 2, teethY + 5);
+            ctx.fillText('V', (v1 + v2) / 2, teethY + 5);
+            ctx.fillText('W', (w1 + w2) / 2, teethY + 5);
+            
+            // 説明矢印と文字
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(u1, teethY - 90);
+            ctx.lineTo(u2, teethY - 90);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 矢印の端
+            ctx.beginPath();
+            ctx.moveTo(u1, teethY - 95);
+            ctx.lineTo(u1, teethY - 85);
+            ctx.moveTo(u2, teethY - 95);
+            ctx.lineTo(u2, teethY - 85);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('複数ティースに分散', (u1 + u2) / 2, teethY - 95);
+        }
+
+        // 現在の設定の巻線パターン展開図
+        function drawCurrentWindingDiagram() {
+            const canvas = document.getElementById('currentWindingDiagram');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const slotCount = motorConfig.slots;
+            const slotWidth = (width - 100) / slotCount;
+            const startX = 50;
+            const teethY = height / 2;
+            
+            // タイトル
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`スロット数: ${slotCount}、磁極数: ${motorConfig.poles}、巻き数: ${motorConfig.turns}ターン`, 10, 20);
+            ctx.fillText(`巻線方式: ${motorConfig.windingType === 'concentrated' ? '集中巻' : '分布巻'}`, 10, 40);
+            
+            // ティース(歯)の描画
+            for (let i = 0; i < slotCount; i++) {
+                const x = startX + i * slotWidth;
+                
+                // ティース
+                ctx.fillStyle = '#d0d0d0';
+                ctx.fillRect(x, teethY - 50, slotWidth * 0.5, 100);
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, teethY - 50, slotWidth * 0.5, 100);
+                
+                // スロット番号
+                ctx.fillStyle = '#999';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(i.toString(), x + slotWidth * 0.25, teethY + 70);
+            }
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d'];
+            const phaseNames = ['U', 'V', 'W'];
+            
+            if (motorConfig.windingType === 'concentrated') {
+                // 集中巻の描画
+                for (let i = 0; i < slotCount; i++) {
+                    const x = startX + i * slotWidth;
+                    const phase = i % 3;
+                    
+                    // コイルの太さを巻き数に応じて変化
+                    const coilThickness = Math.max(3, (motorConfig.turns / 100) * 5);
+                    
+                    ctx.strokeStyle = colors[phase];
+                    ctx.lineWidth = coilThickness;
+                    ctx.lineCap = 'round';
+                    
+                    // 上部の巻き
+                    ctx.beginPath();
+                    const radius = Math.min(18, slotWidth * 0.25);
+                    ctx.arc(x + slotWidth * 0.25, teethY - 35, radius, Math.PI, 0);
+                    ctx.stroke();
+                    
+                    // 下部の巻き
+                    ctx.beginPath();
+                    ctx.arc(x + slotWidth * 0.25, teethY + 35, radius, 0, Math.PI);
+                    ctx.stroke();
+                    
+                    // コイル密度の表現(重ね巻き)
+                    const densityLayers = Math.floor(motorConfig.density / 30);
+                    for (let layer = 1; layer <= densityLayers; layer++) {
+                        ctx.lineWidth = coilThickness * 0.6;
+                        ctx.globalAlpha = 0.3;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x + slotWidth * 0.25, teethY - 35 - layer * 2, radius, Math.PI, 0);
+                        ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.arc(x + slotWidth * 0.25, teethY + 35 + layer * 2, radius, 0, Math.PI);
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1.0;
+                    
+                    // 相の表示
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 3;
+                    ctx.strokeText(phaseNames[phase], x + slotWidth * 0.25, teethY + 5);
+                    ctx.fillText(phaseNames[phase], x + slotWidth * 0.25, teethY + 5);
+                }
+            } else {
+                // 分布巻の描画
+                const coilsPerPhase = Math.floor(slotCount / 3);
+                const coilThickness = Math.max(3, (motorConfig.turns / 100) * 4);
+                
+                for (let phase = 0; phase < 3; phase++) {
+                    ctx.strokeStyle = colors[phase];
+                    ctx.lineWidth = coilThickness;
+                    
+                    for (let coilIdx = 0; coilIdx < coilsPerPhase / 2; coilIdx++) {
+                        const startSlot = phase * coilsPerPhase + coilIdx;
+                        const endSlot = startSlot + 2; // 2スロット分にまたがる
+                        
+                        if (endSlot < slotCount) {
+                            const x1 = startX + startSlot * slotWidth + slotWidth * 0.25;
+                            const x2 = startX + endSlot * slotWidth + slotWidth * 0.25;
+                            
+                            // 上部のコイル接続
+                            ctx.beginPath();
+                            ctx.moveTo(x1, teethY - 50);
+                            ctx.bezierCurveTo(
+                                x1, teethY - 70 - coilIdx * 10,
+                                x2, teethY - 70 - coilIdx * 10,
+                                x2, teethY - 50
+                            );
+                            ctx.stroke();
+                            
+                            // 下部のコイル接続
+                            ctx.beginPath();
+                            ctx.moveTo(x1, teethY + 50);
+                            ctx.bezierCurveTo(
+                                x1, teethY + 70 + coilIdx * 10,
+                                x2, teethY + 70 + coilIdx * 10,
+                                x2, teethY + 50
+                            );
+                            ctx.stroke();
+                            
+                            // 相の表示
+                            ctx.fillStyle = '#fff';
+                            ctx.font = 'bold 10px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.strokeStyle = '#333';
+                            ctx.lineWidth = 2;
+                            const midX = (x1 + x2) / 2;
+                            ctx.strokeText(phaseNames[phase], midX, teethY + 5);
+                            ctx.fillStyle = colors[phase];
+                            ctx.fillText(phaseNames[phase], midX, teethY + 5);
+                        }
+                    }
+                }
+            }
+            
+            // 磁極位置の表示
+            const poleWidth = width / motorConfig.poles;
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
+            for (let i = 0; i < motorConfig.poles; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(i * poleWidth, teethY - 60, poleWidth, 10);
+                }
+            }
+            
+            // 磁極の説明
+            ctx.fillStyle = '#667eea';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('N', poleWidth / 2, teethY - 53);
+            ctx.fillText('S', poleWidth * 1.5, teethY - 53);
+            
+            ctx.fillStyle = '#999';
+            ctx.font = '9px Arial';
+            ctx.fillText('(ロータ磁極位置)', width / 2, teethY - 65);
+        }
+
+        // 初期化
+        updateSimulation();
+        drawWindingDiagrams();
+    </script>
+</body>
+</html>
